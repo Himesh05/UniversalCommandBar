@@ -1,5 +1,12 @@
-from PyQt6.QtWidgets import QWidget, QLineEdit, QVBoxLayout, QCompleter
+from PyQt6.QtWidgets import (
+    QWidget,
+    QLineEdit,
+    QVBoxLayout,
+    QCompleter,
+    QLabel
+)
 from PyQt6.QtCore import Qt
+
 from commands.app_commands import execute_command
 from config.commands import COMMANDS
 
@@ -10,13 +17,12 @@ class CommandBar(QWidget):
 
         self.setWindowTitle("Universal Command Bar")
 
-        # Floating window
         self.setWindowFlags(
-            Qt.WindowType.FramelessWindowHint |
-            Qt.WindowType.WindowStaysOnTopHint
+            Qt.WindowType.FramelessWindowHint
+            | Qt.WindowType.WindowStaysOnTopHint
         )
 
-        self.setFixedSize(600, 70)
+        self.setFixedSize(600, 110)
 
         self.setStyleSheet("""
             QWidget {
@@ -25,7 +31,7 @@ class CommandBar(QWidget):
             }
         """)
 
-        # Input box
+        # Input
         self.command_input = QLineEdit()
 
         self.command_input.setPlaceholderText(
@@ -47,20 +53,31 @@ class CommandBar(QWidget):
             }
         """)
 
-        # Execute command when Enter is pressed
+        # Result Label
+        self.result_label = QLabel("Ready")
+
+        self.result_label.setStyleSheet("""
+            QLabel {
+                color: #BBBBBB;
+                font-size: 14px;
+                padding-left: 5px;
+            }
+        """)
+
+        # Layout
+        layout = QVBoxLayout()
+
+        layout.addWidget(self.command_input)
+        layout.addWidget(self.result_label)
+
+        self.setLayout(layout)
+
+        # Command execution
         self.command_input.returnPressed.connect(
             self.run_command
         )
 
-        layout = QVBoxLayout()
-        layout.addWidget(self.command_input)
-
-        self.setLayout(layout)
-
-        self.center_window()
-
-        self.command_input.setFocus()
-        
+        # Autocomplete
         self.completer = QCompleter(COMMANDS)
 
         self.completer.setCaseSensitivity(
@@ -70,9 +87,14 @@ class CommandBar(QWidget):
         self.command_input.setCompleter(
             self.completer
         )
-        
+
+        # History
         self.command_history = []
         self.history_index = -1
+
+        self.center_window()
+
+        self.command_input.setFocus()
 
     def center_window(self):
         screen = self.screen().availableGeometry()
@@ -81,6 +103,30 @@ class CommandBar(QWidget):
         y = (screen.height() - self.height()) // 3
 
         self.move(x, y)
+
+    def run_command(self):
+        command = self.command_input.text().strip()
+
+        if not command:
+            return
+
+        self.command_history.append(command)
+        self.history_index = len(self.command_history)
+
+        try:
+            result = execute_command(command)
+
+            self.result_label.setText(
+                f"✓ {result}"
+            )
+
+        except Exception as e:
+
+            self.result_label.setText(
+                f"✗ {str(e)}"
+            )
+
+        self.command_input.clear()
 
     def keyPressEvent(self, event):
 
@@ -112,16 +158,3 @@ class CommandBar(QWidget):
                 self.command_input.setText(
                     self.command_history[self.history_index]
                 )
-            
-    def run_command(self):
-        command = self.command_input.text().strip()
-
-        if not command:
-            return
-
-        self.command_history.append(command)
-        self.history_index = len(self.command_history)
-
-        execute_command(command)
-
-        self.command_input.clear()

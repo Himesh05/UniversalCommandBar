@@ -1,6 +1,8 @@
 import subprocess
 import os
+from unittest import result
 import webbrowser
+from commands.calculator_commands import calculate
 
 
 COMMAND_HANDLERS = {
@@ -61,6 +63,11 @@ def execute_command(command):
         query = command[8:]
         youtube_search(query)
         return f"Searching YouTube for: {query}"
+    
+    result = calculate(command)
+
+    if result is not None:
+        return result
 
     command = command.lower()
 

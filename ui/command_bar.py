@@ -116,9 +116,10 @@ class CommandBar(QWidget):
         try:
             result = execute_command(command)
 
-            self.result_label.setText(
-                f"✓ {result}"
-            )
+            if result.replace(".", "", 1).isdigit():
+                self.result_label.setText(result)
+            else:
+                self.result_label.setText(f"✓ {result}")
 
         except Exception as e:
 

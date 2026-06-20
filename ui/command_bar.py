@@ -10,6 +10,8 @@ from PyQt6.QtCore import Qt
 from commands.app_commands import execute_command
 from config.commands import COMMANDS
 
+from services.app_service import get_app_names
+
 
 class CommandBar(QWidget):
     def __init__(self):
@@ -78,7 +80,11 @@ class CommandBar(QWidget):
         )
 
         # Autocomplete
-        self.completer = QCompleter(COMMANDS)
+        all_commands = COMMANDS + get_app_names()
+
+        self.completer = QCompleter(
+            sorted(all_commands)
+        )
 
         self.completer.setCaseSensitivity(
             Qt.CaseSensitivity.CaseInsensitive

@@ -1,13 +1,13 @@
 import subprocess
 import os
-from unittest import result
 import webbrowser
 from commands.calculator_commands import calculate
+from services.app_service import launch_app
+from services.alias_service import resolve_alias
 
 
 COMMAND_HANDLERS = {
     "browser": lambda: open_browser(),
-    "vscode": lambda: subprocess.Popen("code"),
     "downloads": lambda: open_downloads(),
     "desktop": lambda: open_desktop(),
 }
@@ -51,6 +51,8 @@ def youtube_search(query):
 
 
 def execute_command(command):
+    
+    command = resolve_alias(command)
 
     command = command.strip()
 
@@ -75,4 +77,8 @@ def execute_command(command):
         COMMAND_HANDLERS[command]()
         return f"Executed: {command}"
 
+    if launch_app(command):
+        return f"Launched: {command}"
+
     return f"Unknown command: {command}"
+
